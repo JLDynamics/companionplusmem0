@@ -11,8 +11,8 @@ MEM0_CONFIG = {
         "provider": "openai",
         "config": {
             "model": "gpt-4.1-nano",
-            "temperature": 0.2,
-            "max_tokens": 1500,
+            "temperature": 0.8,
+            "max_tokens": 20000,
             "api_key": os.getenv("OPENAI_API_KEY"),
         },
     },
@@ -29,7 +29,7 @@ MEM0_CONFIG = {
             "collection_name": "companion_memories",
             "embedding_model_dims": 1536,
             "client": QdrantClient(
-                path="/tmp/qdrant",
+                path=os.path.expanduser("~/.mem0/qdrant"),  # Permanent location
                 force_disable_check_same_thread=True,
             ),
         },
