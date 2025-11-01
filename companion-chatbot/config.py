@@ -10,9 +10,9 @@ load_dotenv()
 IS_RENDER = os.getenv("RENDER") is not None
 
 # Set appropriate paths based on environment
-# Note: Render doesn't allow writing to /app, use /tmp instead (ephemeral but writable)
-QDRANT_PATH = "/tmp/.mem0/qdrant" if IS_RENDER else os.path.expanduser("~/.mem0/qdrant")
-HISTORY_DB_PATH = "/tmp/.mem0/history.db" if IS_RENDER else os.path.expanduser("~/.mem0/history.db")
+# Render persistent disk mounted at /var/data
+QDRANT_PATH = "/var/data/.mem0/qdrant" if IS_RENDER else os.path.expanduser("~/.mem0/qdrant")
+HISTORY_DB_PATH = "/var/data/.mem0/history.db" if IS_RENDER else os.path.expanduser("~/.mem0/history.db")
 
 MEM0_CONFIG = {
     "llm": {
