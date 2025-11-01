@@ -326,24 +326,37 @@
         
         let isTyping = false;
         const supportsVisualViewport = typeof window.visualViewport !== 'undefined';
+        let baselineViewportBottom = supportsVisualViewport
+            ? window.visualViewport.height + window.visualViewport.offsetTop
+            : window.innerHeight;
+
+        function setKeyboardOffset(px) {
+            document.documentElement.style.setProperty('--keyboard-offset', `${Math.max(0, Math.round(px))}px`);
+        }
 
         function updateKeyboardOffset() {
-            if (!supportsVisualViewport) {
-                document.documentElement.style.setProperty('--keyboard-offset', '0px');
-                return;
-            }
+            if (supportsVisualViewport) {
+                const viewport = window.visualViewport;
+                const viewportBottom = viewport.height + viewport.offsetTop;
 
-            const viewport = window.visualViewport;
-            const heightDiff = window.innerHeight - viewport.height;
-            const offset = Math.max(0, heightDiff - viewport.offsetTop);
-            document.documentElement.style.setProperty('--keyboard-offset', `${offset}px`);
+                // When the keyboard is hidden, update our baseline measurement.
+                if (viewportBottom >= baselineViewportBottom - 1) {
+                    baselineViewportBottom = viewportBottom;
+                }
+
+                const offset = baselineViewportBottom - viewportBottom;
+                setKeyboardOffset(offset);
+            } else {
+                baselineViewportBottom = Math.max(baselineViewportBottom, window.innerHeight);
+                const offset = baselineViewportBottom - window.innerHeight;
+                setKeyboardOffset(offset);
+            }
         }
 
         if (supportsVisualViewport) {
             const handleViewportChange = () => {
                 updateKeyboardOffset();
                 if (document.activeElement === messageInput) {
-                    // Keep the latest messages visible when the keyboard appears
                     chatContainer.scrollTo({
                         top: chatContainer.scrollHeight,
                         behavior: 'smooth'
@@ -353,6 +366,15 @@
 
             window.visualViewport.addEventListener('resize', handleViewportChange);
             window.visualViewport.addEventListener('scroll', handleViewportChange);
+            window.addEventListener('orientationchange', () => {
+                baselineViewportBottom = window.visualViewport.height + window.visualViewport.offsetTop;
+                updateKeyboardOffset();
+            });
+        } else {
+            window.addEventListener('orientationchange', () => {
+                baselineViewportBottom = window.innerHeight;
+                updateKeyboardOffset();
+            });
         }
 
         updateKeyboardOffset();
