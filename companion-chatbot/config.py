@@ -10,23 +10,9 @@ load_dotenv()
 IS_RENDER = os.getenv("RENDER") is not None
 
 # Set appropriate paths based on environment
-QDRANT_PATH = "/app/.mem0/qdrant" if IS_RENDER else os.path.expanduser("~/.mem0/qdrant")
-HISTORY_DB_PATH = "/app/.mem0/history.db" if IS_RENDER else os.path.expanduser("~/.mem0/history.db")
-
-import os
-
-from dotenv import load_dotenv
-from qdrant_client import QdrantClient
-
-# Load environment variables from a local `.env` file.
-load_dotenv()
-
-# Detect if running on Render cloud (for path configuration)
-IS_RENDER = os.getenv("RENDER") is not None
-
-# Set appropriate paths for local Mac vs Render cloud
-QDRANT_PATH = "/app/.mem0/qdrant" if IS_RENDER else os.path.expanduser("~/.mem0/qdrant")
-HISTORY_DB_PATH = "/app/.mem0/history.db" if IS_RENDER else os.path.expanduser("~/.mem0/history.db")
+# Note: Render doesn't allow writing to /app, use /tmp instead (ephemeral but writable)
+QDRANT_PATH = "/tmp/.mem0/qdrant" if IS_RENDER else os.path.expanduser("~/.mem0/qdrant")
+HISTORY_DB_PATH = "/tmp/.mem0/history.db" if IS_RENDER else os.path.expanduser("~/.mem0/history.db")
 
 MEM0_CONFIG = {
     "llm": {
