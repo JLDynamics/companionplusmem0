@@ -65,8 +65,11 @@
             left: 0;
             right: 0;
             overflow-y: auto;
+            overflow-x: hidden;
             padding: 20px;
+            padding-bottom: 30px;
             -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
         }
         
         .message {
@@ -141,6 +144,7 @@
             border-top: 1px solid #2C2C2E;
             display: flex;
             gap: 10px;
+            align-items: flex-end;
             z-index: 101;
         }
         
@@ -152,13 +156,22 @@
             background: #2C2C2E;
             color: #fff;
             font-size: 16px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             outline: none;
             resize: none;
             line-height: 1.4;
             min-height: 44px;
-            max-height: 160px;
+            max-height: 120px;
             overflow-y: auto;
-            word-break: break-word;
+            overflow-x: hidden;
+            word-wrap: break-word;
+            -webkit-appearance: none;
+            appearance: none;
+            transition: border-color 0.2s ease;
+        }
+        
+        #message-input:focus {
+            border: 1px solid #007AFF;
         }
         
         #message-input::placeholder {
@@ -178,15 +191,20 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
         }
         
         #send-btn:disabled {
             background: #2C2C2E;
             color: #666;
+            cursor: not-allowed;
+            opacity: 0.5;
         }
         
         #send-btn:active:not(:disabled) {
             background: #0051D5;
+            transform: scale(0.95);
         }
         
         #modal {
@@ -288,18 +306,32 @@
         const closeModal = document.getElementById('close-modal');
         const memoriesList = document.getElementById('memories-list');
         
+        let isTyping = false;
+        
+        // Auto-resize textarea with smooth animation
         function autoResizeTextarea() {
             messageInput.style.height = 'auto';
-            const maxHeight = 160;
-            messageInput.style.height = Math.min(messageInput.scrollHeight, maxHeight) + 'px';
+            const newHeight = Math.min(messageInput.scrollHeight, 120);
+            messageInput.style.height = newHeight + 'px';
         }
 
-        // Enable send button when input has text and resize as user types
+        // Enable send button and auto-resize
         messageInput.addEventListener('input', () => {
-            sendBtn.disabled = !messageInput.value.trim();
+            sendBtn.disabled = !messageInput.value.trim() || isTyping;
             autoResizeTextarea();
         });
+        
+        // Handle Enter key (send) and Shift+Enter (new line)
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (!isTyping && messageInput.value.trim()) {
+                    sendMessage();
+                }
+            }
+        });
 
+        // Initialize textarea height
         autoResizeTextarea();
         
         function addMessage(text, type) {
@@ -307,7 +339,14 @@
             div.className = `message ${type}`;
             div.textContent = text;
             chatContainer.appendChild(div);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            // Smooth scroll to bottom
+            setTimeout(() => {
+                chatContainer.scrollTo({
+                    top: chatContainer.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 100);
         }
         
         function showTyping() {
@@ -326,12 +365,20 @@
         
         async function sendMessage() {
             const message = messageInput.value.trim();
-            if (!message) return;
+            if (!message || isTyping) return;
             
+            // Set typing state
+            isTyping = true;
+            sendBtn.disabled = true;
+            
+            // Add user message
             addMessage(message, 'user');
+            
+            // Clear input and reset height
             messageInput.value = '';
             autoResizeTextarea();
-            sendBtn.disabled = true;
+            
+            // Show typing indicator
             showTyping();
             
             try {
@@ -353,6 +400,11 @@
                 hideTyping();
                 addMessage('Sorry, something went wrong. Please try again.', 'assistant');
                 console.error('Error:', error);
+            } finally {
+                // Reset typing state and refocus input
+                isTyping = false;
+                sendBtn.disabled = false;
+                messageInput.focus();
             }
         }
         
@@ -377,19 +429,18 @@
             }
         }
         
-        sendBtn.onclick = sendMessage;
-        messageInput.onkeypress = (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        };
-        
-        memoriesBtn.onclick = loadMemories;
-        closeModal.onclick = () => modal.classList.remove('show');
-        modal.onclick = (e) => {
+        // Event listeners
+        sendBtn.addEventListener('click', sendMessage);
+        memoriesBtn.addEventListener('click', loadMemories);
+        closeModal.addEventListener('click', () => modal.classList.remove('show'));
+        modal.addEventListener('click', (e) => {
             if (e.target === modal) modal.classList.remove('show');
-        };
+        });
+        
+        // Focus input on load
+        window.addEventListener('load', () => {
+            messageInput.focus();
+        });
         
         // No initial greeting - let the user start the conversation
     </script>
