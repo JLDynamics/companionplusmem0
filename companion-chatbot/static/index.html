@@ -19,30 +19,34 @@
         
         :root {
             color-scheme: dark;
-            --keyboard-offset: 0px;
         }
 
         html, body {
+            margin: 0;
+            padding: 0;
             height: 100%;
+            overflow: hidden;
         }
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            min-height: 100vh;
-            min-height: 100svh;
-            min-height: 100dvh; /* Use dynamic viewport height where supported */
             background: #000;
             color: #fff;
-            overflow: hidden;
-            position: relative;
-            overscroll-behavior: contain;
         }
         
-        #header {
-            position: fixed;
+        #app-container {
+            position: absolute;
             top: 0;
             left: 0;
             right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        #header {
+            flex-shrink: 0;
             padding: 15px 20px;
             padding-top: max(15px, env(safe-area-inset-top));
             background: #1C1C1E;
@@ -50,7 +54,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 100;
         }
         
         #header h1 {
@@ -74,17 +77,12 @@
         }
         
         #chat-container {
-            position: absolute;
-            top: 60px;
-            bottom: calc(80px + var(--keyboard-offset));
-            left: 0;
-            right: 0;
+            flex: 1;
             overflow-y: auto;
             overflow-x: hidden;
             padding: 20px;
-            padding-bottom: calc(30px + var(--keyboard-offset));
+            padding-bottom: 30px;
             -webkit-overflow-scrolling: touch;
-            scroll-behavior: smooth;
         }
         
         .message {
@@ -149,21 +147,14 @@
         }
         
         #input-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
+            flex-shrink: 0;
             padding: 15px 20px;
             padding-bottom: max(15px, env(safe-area-inset-bottom));
-            background: #1C1C1E;
+            background: #1C1C1C1E;
             border-top: 1px solid #2C2C2E;
             display: flex;
             gap: 10px;
             align-items: flex-end;
-            z-index: 101;
-            transform: translateY(calc(-1 * var(--keyboard-offset)));
-            transition: transform 0.2s ease;
-            will-change: transform;
         }
         
         #message-input {
@@ -179,13 +170,9 @@
             resize: none;
             line-height: 1.4;
             min-height: 44px;
-            max-height: 120px;
+            max-height: 100px;
             overflow-y: auto;
-            overflow-x: hidden;
             word-wrap: break-word;
-            -webkit-appearance: none;
-            appearance: none;
-            transition: border-color 0.2s ease;
         }
         
         #message-input:focus {
@@ -293,16 +280,18 @@
     </style>
 </head>
 <body>
-    <div id="header">
-        <h1>🦝 Rudi</h1>
-        <button id="memories-btn">Memories</button>
-    </div>
-    
-    <div id="chat-container"></div>
-    
-    <div id="input-container">
-    <textarea id="message-input" placeholder="Message Rudi..." autocomplete="off" rows="1"></textarea>
-        <button id="send-btn" disabled>▲</button>
+    <div id="app-container">
+        <div id="header">
+            <h1>🦝 Rudi</h1>
+            <button id="memories-btn">Memories</button>
+        </div>
+        
+        <div id="chat-container"></div>
+        
+        <div id="input-container">
+            <input type="text" id="message-input" placeholder="Message Rudi..." autocomplete="off">
+            <button id="send-btn" disabled>▲</button>
+        </div>
     </div>
     
     <div id="modal">
@@ -325,114 +314,28 @@
         const memoriesList = document.getElementById('memories-list');
         
         let isTyping = false;
-        const supportsVisualViewport = typeof window.visualViewport !== 'undefined';
-        let baselineViewportBottom = supportsVisualViewport
-            ? window.visualViewport.height + window.visualViewport.offsetTop
-            : window.innerHeight;
-
-        function setKeyboardOffset(px) {
-            document.documentElement.style.setProperty('--keyboard-offset', `${Math.max(0, Math.round(px))}px`);
-        }
-
-        function updateKeyboardOffset() {
-            if (supportsVisualViewport) {
-                const viewport = window.visualViewport;
-                const viewportBottom = viewport.height + viewport.offsetTop;
-
-                // When the keyboard is hidden, update our baseline measurement.
-                if (viewportBottom >= baselineViewportBottom - 1) {
-                    baselineViewportBottom = viewportBottom;
-                }
-
-                const offset = baselineViewportBottom - viewportBottom;
-                setKeyboardOffset(offset);
-            } else {
-                baselineViewportBottom = Math.max(baselineViewportBottom, window.innerHeight);
-                const offset = baselineViewportBottom - window.innerHeight;
-                setKeyboardOffset(offset);
-            }
-        }
-
-        if (supportsVisualViewport) {
-            const handleViewportChange = () => {
-                updateKeyboardOffset();
-                if (document.activeElement === messageInput) {
-                    chatContainer.scrollTo({
-                        top: chatContainer.scrollHeight,
-                        behavior: 'smooth'
-                    });
-                }
-            };
-
-            window.visualViewport.addEventListener('resize', handleViewportChange);
-            window.visualViewport.addEventListener('scroll', handleViewportChange);
-            window.addEventListener('orientationchange', () => {
-                baselineViewportBottom = window.visualViewport.height + window.visualViewport.offsetTop;
-                updateKeyboardOffset();
-            });
-        } else {
-            window.addEventListener('orientationchange', () => {
-                baselineViewportBottom = window.innerHeight;
-                updateKeyboardOffset();
-            });
-        }
-
-        updateKeyboardOffset();
-        window.addEventListener('resize', updateKeyboardOffset);
         
-        // Auto-resize textarea with smooth animation
-        function autoResizeTextarea() {
-            messageInput.style.height = 'auto';
-            const newHeight = Math.min(messageInput.scrollHeight, 120);
-            messageInput.style.height = newHeight + 'px';
-        }
-
-        // Enable send button and auto-resize
+        // Enable send button
         messageInput.addEventListener('input', () => {
             sendBtn.disabled = !messageInput.value.trim() || isTyping;
-            autoResizeTextarea();
         });
         
-        // Handle Enter key (send) and Shift+Enter (new line)
+        // Handle Enter key
         messageInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
+            if (e.key === 'Enter') {
                 e.preventDefault();
                 if (!isTyping && messageInput.value.trim()) {
                     sendMessage();
                 }
             }
         });
-
-        messageInput.addEventListener('focus', () => {
-            setTimeout(() => {
-                updateKeyboardOffset();
-                chatContainer.scrollTo({
-                    top: chatContainer.scrollHeight,
-                    behavior: 'smooth'
-                });
-            }, 50);
-        });
-
-        messageInput.addEventListener('blur', () => {
-            setTimeout(updateKeyboardOffset, 100);
-        });
-
-        // Initialize textarea height
-        autoResizeTextarea();
         
         function addMessage(text, type) {
             const div = document.createElement('div');
             div.className = `message ${type}`;
             div.textContent = text;
             chatContainer.appendChild(div);
-            
-            // Smooth scroll to bottom
-            setTimeout(() => {
-                chatContainer.scrollTo({
-                    top: chatContainer.scrollHeight,
-                    behavior: 'smooth'
-                });
-            }, 100);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
         }
         
         function showTyping() {
@@ -460,9 +363,8 @@
             // Add user message
             addMessage(message, 'user');
             
-            // Clear input and reset height
+            // Clear input
             messageInput.value = '';
-            autoResizeTextarea();
             
             // Show typing indicator
             showTyping();
