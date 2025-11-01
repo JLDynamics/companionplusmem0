@@ -27,14 +27,14 @@ if IS_RENDER and QDRANT_URL and QDRANT_API_KEY:
     
     COLLECTION_NAME = "companion_memories_iphone"  # Separate collection!
     
-    # Create /tmp/.mem0 directory if it doesn't exist
-    import os as _os
+    # Create /tmp/.mem0 directory before setting path
     _tmp_dir = "/tmp/.mem0"
-    _os.makedirs(_tmp_dir, exist_ok=True)
-    HISTORY_DB_PATH = "/tmp/.mem0/history_iphone.db"  # Ephemeral, but not critical
+    os.makedirs(_tmp_dir, exist_ok=True)
+    HISTORY_DB_PATH = os.path.join(_tmp_dir, "history_iphone.db")
     
     print(f"✅ Connected to Qdrant Cloud")
     print(f"📱 iPhone collection: {COLLECTION_NAME}")
+    print(f"📁 History DB: {HISTORY_DB_PATH}")
     
 else:
     # ==== MAC (Local Terminal) ====
