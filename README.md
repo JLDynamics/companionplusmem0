@@ -1,31 +1,54 @@
 # 🦝 Rudi - Personal AI Companion Chatbot
 
-A sarcastic red panda AI companion powered by Mem0 for persistent memory, OpenAI GPT-4.1-nano for conversations, and Qdrant for vector storage. Available on Mac terminal and iPhone web interface with separate memory storage.
+A sarcastic red panda AI companion with persistent memory, powered by OpenAI GPT-4.1-nano, Mem0, and Qdrant. Features separate storage for Mac terminal and iPhone web interface.
+
+---
 
 ## ✨ Features
 
-- 🧠 **Persistent Long-Term Memory** - Remembers conversations across sessions
-- 🦝 **Unique Personality** - Sarcastic red panda with attitude (Rudi)
-- 💻 **Mac Terminal App** - Full-featured command-line chatbot
-- 📱 **iPhone Web Interface** - Mobile-optimized chat with dark theme
-- 🔒 **Privacy-First** - Self-hosted with separate Mac/cloud storage
-- 🌐 **Cloud Deployment** - Free hosting on Render.com
-- ⚡ **Fast & Efficient** - Uses gpt-4.1-nano for cost-effective responses
+- 🧠 **Persistent Long-Term Memory** - Remembers your preferences, conversations, and life details
+- 🦝 **Sarcastic Red Panda Personality** - Meet Rudi, your sardonic AI companion
+- 💻 **Mac Terminal Interface** - Full-featured command-line chatbot
+- 📱 **iPhone Web App** - Mobile-optimized dark theme with touch controls
+- 🔒 **Privacy-First Design** - Self-hosted with separate Mac/cloud storage (no sync)
+- 🌐 **Free Cloud Hosting** - Deployed on Render.com (free tier)
+- ⚡ **Cost-Effective** - Uses gpt-4.1-nano for fast, affordable responses
+- 🎭 **Rich Personality System** - Context-aware responses with memory-driven conversations
+- 📊 **Memory Management** - View, search, and manage stored memories
+
+---
 
 ## 🏗️ Architecture
 
 ```
-Mac Terminal                          iPhone Safari
-     ↓                                     ↓
-Local Qdrant                         Render.com (FastAPI)
-(~/.mem0/qdrant)                           ↓
-                                   Qdrant Cloud (Free Tier)
+┌─────────────────────────────────────┐
+│   Mac Terminal                      │
+│   python3 companion.py              │
+│   ↓                                 │
+│   Local Qdrant                      │
+│   ~/.mem0/qdrant/                   │
+│   Collection: companion_memories    │
+│   ✅ 44+ memories (persistent)      │
+└─────────────────────────────────────┘
+
+┌─────────────────────────────────────┐
+│   iPhone Safari                     │
+│   https://your-app.onrender.com     │
+│   ↓                                 │
+│   Render.com (FastAPI Server)       │
+│   ↓                                 │
+│   Qdrant Cloud (Free Tier)          │
+│   Collection: companion_memories_iphone │
+│   ✅ 34+ memories (persistent)      │
+└─────────────────────────────────────┘
 ```
 
 **Storage Strategy:**
-- Mac: Local on-disk storage (44 memories)
-- iPhone: Qdrant Cloud persistent storage (34 memories)
-- **Both completely separate** - no sync by design
+- **Mac:** Local Qdrant database (`~/.mem0/qdrant/`) - completely separate
+- **iPhone:** Qdrant Cloud (1GB free) - completely separate
+- **No sync by design** - keeps personal Mac memories private
+
+---
 
 ## 🚀 Quick Start
 
@@ -52,29 +75,347 @@ Local Qdrant                         Render.com (FastAPI)
    python3 companion.py
    ```
 
-### iPhone Web Deployment
+5. **Chat with Rudi:**
+   ```
+   You: Hi, my name is Jack
+   Rudi: Well hello there, Jack. Ready to grace me with your riveting conversation?
+   
+   You: Remember that I love pizza
+   Rudi: Pizza lover, noted. How original.
+   
+   You: memories
+   # Shows all stored memories
+   
+   You: exit
+   # Saves and exits
+   ```
 
-1. **Set up Qdrant Cloud:**
-   - Sign up at [cloud.qdrant.io](https://cloud.qdrant.io)
-   - Create a free cluster (1GB, $0/month)
-   - Get your cluster URL and API key
+**Commands:**
+- `memories` - View all stored memories
+- `clear` - Clear conversation history (keeps memories)
+- `exit` - Save and quit
 
-2. **Deploy to Render.com:**
-   - Push code to GitHub
-   - Connect repository to Render
-   - Set environment variables:
-     ```
-     OPENAI_API_KEY=sk-proj-your-key
-     RENDER=true
-     QDRANT_URL=https://your-cluster.aws.cloud.qdrant.io:6333
-     QDRANT_API_KEY=your-qdrant-key
-     ```
-   - Deploy with:
-     - Build Command: `pip install -r requirements.txt`
-     - Start Command: `uvicorn api:app --host 0.0.0.0 --port $PORT`
+---
 
-3. **Access on iPhone:**
-   - Open Safari
+## 📱 iPhone Web Deployment
+
+### Step 1: Set up Qdrant Cloud (Free)
+
+1. Sign up at [cloud.qdrant.io](https://cloud.qdrant.io) (free, no credit card)
+2. Create a cluster:
+   - Name: `rudi-memories`
+   - Cloud: AWS
+   - Region: `us-west-2` (or closest to you)
+   - Plan: **Free Tier** (1GB storage)
+3. Get credentials:
+   - **Cluster URL**: Copy from dashboard (e.g., `https://abc123.aws.cloud.qdrant.io:6333`)
+   - **API Key**: Click "API Keys" → "Create" → Copy key
+
+### Step 2: Deploy to Render.com
+
+1. **Push code to GitHub** (if not already done):
+   ```bash
+   git add .
+   git commit -m "Deploy Rudi to Render"
+   git push origin main
+   ```
+
+2. **Create Render service:**
+   - Go to [dashboard.render.com](https://dashboard.render.com)
+   - Click **"New +"** → **"Web Service"**
+   - Connect your GitHub repository
+   - Configure:
+     - **Name**: `rudi-companion`
+     - **Root Directory**: `companion-chatbot`
+     - **Runtime**: Python 3
+     - **Build Command**: `pip install -r requirements.txt`
+     - **Start Command**: `uvicorn api:app --host 0.0.0.0 --port $PORT`
+     - **Plan**: Free
+
+3. **Add environment variables** in Render dashboard:
+
+   | Key | Value |
+   |-----|-------|
+   | `OPENAI_API_KEY` | `sk-proj-your-openai-key` |
+   | `RENDER` | `true` |
+   | `QDRANT_URL` | `https://your-cluster.aws.cloud.qdrant.io:6333` |
+   | `QDRANT_API_KEY` | `your-qdrant-api-key` |
+
+4. **Deploy** - Wait ~3 minutes for deployment
+
+### Step 3: Access on iPhone
+
+1. Open Safari on iPhone
+2. Go to: `https://rudi-companion.onrender.com` (your Render URL)
+3. Chat with Rudi!
+4. **Add to Home Screen** for app-like experience:
+   - Tap Share button → "Add to Home Screen"
+   - Removes Safari UI for cleaner interface
+
+**iPhone Features:**
+- 💬 Chat interface with auto-scrolling
+- 📚 "Memories" button (top right) to view stored memories
+- 🌙 Dark theme optimized for mobile
+- ⌨️ Auto-resizing text input
+- 🔄 Persistent memories (survive app restarts)
+
+---
+
+## 🔧 Configuration
+
+### Personality Customization
+
+Edit `companion.py` to change Rudi's personality:
+
+```python
+SYSTEM_PROMPT = """
+You are Rudi, a sarcastic red panda AI companion...
+[Modify personality traits here]
+"""
+```
+
+### Model Configuration
+
+Change AI model in `config.py`:
+
+```python
+"llm": {
+    "provider": "openai",
+    "config": {
+        "model": "gpt-4.1-nano",  # Change model here
+        "temperature": 0.8,        # 0.0 = focused, 1.0 = creative
+        "max_tokens": 20000,
+    }
+}
+```
+
+**Supported models:**
+- `gpt-4.1-nano` (default, fast & cheap)
+- `gpt-4o-mini` (smarter, slightly slower)
+- `gpt-4` (most capable, expensive)
+
+### Memory Settings
+
+Adjust memory retrieval in `companion.py`:
+
+```python
+relevant_memories = memory.search(
+    query=user_input,
+    user_id=USER_ID,
+    limit=3  # Number of memories to retrieve (3-5 recommended)
+)
+```
+
+---
+
+## 📂 Project Structure
+
+```
+companionplusmem0/
+├── companion-chatbot/
+│   ├── companion.py          # Main Mac terminal chatbot
+│   ├── api.py                # FastAPI server for iPhone
+│   ├── config.py             # Configuration & Mem0 setup
+│   ├── requirements.txt      # Python dependencies
+│   ├── .env                  # API keys (gitignored)
+│   ├── .env.example          # Environment template
+│   ├── static/
+│   │   └── index.html        # iPhone web interface
+│   ├── export_memories.py    # Export Mac memories to JSON
+│   ├── import_memories.py    # Import memories to Qdrant Cloud
+│   └── .gitignore
+├── README.md
+└── DEPLOYMENT.md             # Detailed deployment guide
+```
+
+---
+
+## 🔄 Syncing Memories (Optional)
+
+By default, Mac and iPhone memories are **separate**. To copy Mac memories to iPhone:
+
+1. **Export Mac memories:**
+   ```bash
+   cd companion-chatbot
+   python3 export_memories.py
+   # Creates: memories_export.json
+   ```
+
+2. **Import to Qdrant Cloud:**
+   ```bash
+   # Set environment variables first:
+   export QDRANT_URL="https://your-cluster.aws.cloud.qdrant.io:6333"
+   export QDRANT_API_KEY="your-qdrant-api-key"
+   export OPENAI_API_KEY="sk-proj-your-key"
+   
+   python3 import_memories.py
+   ```
+
+3. **Verify on iPhone:**
+   - Open your app
+   - Click "Memories" button
+   - See imported memories
+
+**Note:** This is a one-time copy. Future memories stay separate.
+
+---
+
+## 💰 Cost Breakdown
+
+| Service | Usage | Monthly Cost |
+|---------|-------|--------------|
+| **Render.com** | Web hosting (free tier) | $0 |
+| **Qdrant Cloud** | 1GB vector storage (free tier) | $0 |
+| **OpenAI API** | ~2000 messages with gpt-4.1-nano | ~$1-2 |
+| **Total** | | **~$1-2/month** |
+
+**Storage Capacity:**
+- 1GB Qdrant Cloud = ~34,000 memories
+- At 2000 messages/month = **3+ years** before full
+
+---
+
+## 🐛 Troubleshooting
+
+### Mac Terminal Issues
+
+**Error: "OPENAI_API_KEY is not set"**
+```bash
+# Create .env file:
+echo "OPENAI_API_KEY=sk-proj-your-key" > .env
+```
+
+**Error: "Database is locked"**
+```bash
+# Kill existing process:
+pkill -f companion.py
+```
+
+**Memory not working:**
+```bash
+# Check Qdrant data exists:
+ls -la ~/.mem0/qdrant/
+```
+
+### iPhone/Render Issues
+
+**Error: "Permission denied: '/var/data'"**
+- Solution: Make sure `QDRANT_URL` and `QDRANT_API_KEY` are set in Render
+
+**Error: "Unable to open database file"**
+- Solution: Redeploy - the latest code creates `/tmp/.mem0/` directory
+
+**Memories not persisting:**
+- Check Render logs for "Connected to Qdrant Cloud" message
+- Verify `QDRANT_URL` includes `:6333` port
+- Check Qdrant dashboard for `companion_memories_iphone` collection
+
+**App won't load:**
+```bash
+# Check Render logs at:
+https://dashboard.render.com → Your Service → Logs
+```
+
+---
+
+## 🔒 Security & Privacy
+
+- ✅ **API keys stored in `.env`** (gitignored, never committed)
+- ✅ **Separate storage** - Mac and iPhone don't share data
+- ✅ **Self-hosted** - You own your data
+- ✅ **No analytics** - No tracking or telemetry
+- ✅ **Open source** - Audit the code yourself
+
+**Never share your:**
+- OpenAI API key
+- Qdrant API key
+- `.env` file
+
+---
+
+## 📊 Mem0 Research Highlights
+
+- **+26% Accuracy** over OpenAI Memory on LOCOMO benchmark
+- **91% Faster Responses** than full-context retrieval
+- **90% Lower Token Usage** than full-context, cutting costs
+- [Read the full paper](https://mem0.ai/research)
+
+---
+
+## 🤝 Contributing
+
+Contributions welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+## 📚 Documentation & Resources
+
+- **Mem0 Docs**: https://docs.mem0.ai
+- **Qdrant Docs**: https://qdrant.tech/documentation/
+- **OpenAI API**: https://platform.openai.com/docs
+- **Render Docs**: https://render.com/docs
+- **FastAPI Docs**: https://fastapi.tiangolo.com
+
+---
+
+## 💬 Support & Community
+
+- **GitHub Issues**: [Report bugs](https://github.com/JLDynamics/companionplusmem0/issues)
+- **Mem0 Discord**: [Join community](https://mem0.dev/DiG)
+- **Email**: licanada2010@gmail.com
+
+---
+
+## 📜 Citation
+
+If you use Mem0 in research:
+
+```bibtex
+@article{mem0,
+  title={Mem0: Building Production-Ready AI Agents with Scalable Long-Term Memory},
+  author={Chhikara, Prateek and Khant, Dev and Aryan, Saket and Singh, Taranjeet and Yadav, Deshraj},
+  journal={arXiv preprint arXiv:2504.19413},
+  year={2025}
+}
+```
+
+---
+
+## ⚖️ License
+
+Apache 2.0 - see [LICENSE](LICENSE) for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- **Mem0** - Memory layer framework
+- **Qdrant** - Vector database
+- **OpenAI** - Language models
+- **Render** - Free hosting platform
+
+---
+
+## 🎯 Roadmap
+
+- [ ] Voice input support
+- [ ] Image memory (remember photos)
+- [ ] Multi-user support
+- [ ] Memory export/backup automation
+- [ ] Telegram bot integration
+- [ ] Android app
+
+---
+
+**Built with ❤️ by Jack | Powered by Mem0, OpenAI, and Qdrant**
+
+**Star ⭐ this repo if you find it helpful!**
    - Go to: `https://your-service.onrender.com`
    - Tap "Add to Home Screen" for app-like experience
 
