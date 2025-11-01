@@ -17,23 +17,25 @@
             box-sizing: border-box;
         }
         
-        html {
-            height: 100vh;
-            height: 100dvh; /* Dynamic viewport height - adapts to browser chrome */
+        :root {
+            color-scheme: dark;
+            --keyboard-offset: 0px;
+        }
+
+        html, body {
+            height: 100%;
         }
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            height: 100%;
+            min-height: 100vh;
+            min-height: 100svh;
+            min-height: 100dvh; /* Use dynamic viewport height where supported */
             background: #000;
             color: #fff;
             overflow: hidden;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            width: 100%;
+            position: relative;
+            overscroll-behavior: contain;
         }
         
         #header {
@@ -74,13 +76,13 @@
         #chat-container {
             position: absolute;
             top: 60px;
-            bottom: 80px;
+            bottom: calc(80px + var(--keyboard-offset));
             left: 0;
             right: 0;
             overflow-y: auto;
             overflow-x: hidden;
             padding: 20px;
-            padding-bottom: 30px;
+            padding-bottom: calc(30px + var(--keyboard-offset));
             -webkit-overflow-scrolling: touch;
             scroll-behavior: smooth;
         }
@@ -159,6 +161,9 @@
             gap: 10px;
             align-items: flex-end;
             z-index: 101;
+            transform: translateY(calc(-1 * var(--keyboard-offset)));
+            transition: transform 0.2s ease;
+            will-change: transform;
         }
         
         #message-input {
@@ -320,6 +325,38 @@
         const memoriesList = document.getElementById('memories-list');
         
         let isTyping = false;
+        const supportsVisualViewport = typeof window.visualViewport !== 'undefined';
+
+        function updateKeyboardOffset() {
+            if (!supportsVisualViewport) {
+                document.documentElement.style.setProperty('--keyboard-offset', '0px');
+                return;
+            }
+
+            const viewport = window.visualViewport;
+            const heightDiff = window.innerHeight - viewport.height;
+            const offset = Math.max(0, heightDiff - viewport.offsetTop);
+            document.documentElement.style.setProperty('--keyboard-offset', `${offset}px`);
+        }
+
+        if (supportsVisualViewport) {
+            const handleViewportChange = () => {
+                updateKeyboardOffset();
+                if (document.activeElement === messageInput) {
+                    // Keep the latest messages visible when the keyboard appears
+                    chatContainer.scrollTo({
+                        top: chatContainer.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }
+            };
+
+            window.visualViewport.addEventListener('resize', handleViewportChange);
+            window.visualViewport.addEventListener('scroll', handleViewportChange);
+        }
+
+        updateKeyboardOffset();
+        window.addEventListener('resize', updateKeyboardOffset);
         
         // Auto-resize textarea with smooth animation
         function autoResizeTextarea() {
@@ -342,6 +379,20 @@
                     sendMessage();
                 }
             }
+        });
+
+        messageInput.addEventListener('focus', () => {
+            setTimeout(() => {
+                updateKeyboardOffset();
+                chatContainer.scrollTo({
+                    top: chatContainer.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 50);
+        });
+
+        messageInput.addEventListener('blur', () => {
+            setTimeout(updateKeyboardOffset, 100);
         });
 
         // Initialize textarea height
