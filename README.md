@@ -1,53 +1,82 @@
-<p align="center">
-  <a href="https://github.com/mem0ai/mem0">
-    <img src="docs/images/banner-sm.png" width="800px" alt="Mem0 - The Memory Layer for Personalized AI">
-  </a>
-</p>
-<p align="center" style="display: flex; justify-content: center; gap: 20px; align-items: center;">
-  <a href="https://trendshift.io/repositories/11194" target="blank">
-    <img src="https://trendshift.io/api/badge/repositories/11194" alt="mem0ai%2Fmem0 | Trendshift" width="250" height="55"/>
-  </a>
-</p>
+# 🦝 Rudi - Personal AI Companion Chatbot
 
-<p align="center">
-  <a href="https://mem0.ai">Learn more</a>
-  ·
-  <a href="https://mem0.dev/DiG">Join Discord</a>
-  ·
-  <a href="https://mem0.dev/demo">Demo</a>
-  ·
-  <a href="https://mem0.dev/openmemory">OpenMemory</a>
-</p>
+A sarcastic red panda AI companion powered by Mem0 for persistent memory, OpenAI GPT-4.1-nano for conversations, and Qdrant for vector storage. Available on Mac terminal and iPhone web interface with separate memory storage.
 
-<p align="center">
-  <a href="https://mem0.dev/DiG">
-    <img src="https://img.shields.io/badge/Discord-%235865F2.svg?&logo=discord&logoColor=white" alt="Mem0 Discord">
-  </a>
-  <a href="https://pepy.tech/project/mem0ai">
-    <img src="https://img.shields.io/pypi/dm/mem0ai" alt="Mem0 PyPI - Downloads">
-  </a>
-  <a href="https://github.com/mem0ai/mem0">
-    <img src="https://img.shields.io/github/commit-activity/m/mem0ai/mem0?style=flat-square" alt="GitHub commit activity">
-  </a>
-  <a href="https://pypi.org/project/mem0ai" target="blank">
-    <img src="https://img.shields.io/pypi/v/mem0ai?color=%2334D058&label=pypi%20package" alt="Package version">
-  </a>
-  <a href="https://www.npmjs.com/package/mem0ai" target="blank">
-    <img src="https://img.shields.io/npm/v/mem0ai" alt="Npm package">
-  </a>
-  <a href="https://www.ycombinator.com/companies/mem0">
-    <img src="https://img.shields.io/badge/Y%20Combinator-S24-orange?style=flat-square" alt="Y Combinator S24">
-  </a>
-</p>
+## ✨ Features
 
-<p align="center">
-  <a href="https://mem0.ai/research"><strong>📄 Building Production-Ready AI Agents with Scalable Long-Term Memory →</strong></a>
-</p>
-<p align="center">
-  <strong>⚡ +26% Accuracy vs. OpenAI Memory • 🚀 91% Faster • 💰 90% Fewer Tokens</strong>
-</p>
+- 🧠 **Persistent Long-Term Memory** - Remembers conversations across sessions
+- 🦝 **Unique Personality** - Sarcastic red panda with attitude (Rudi)
+- 💻 **Mac Terminal App** - Full-featured command-line chatbot
+- 📱 **iPhone Web Interface** - Mobile-optimized chat with dark theme
+- 🔒 **Privacy-First** - Self-hosted with separate Mac/cloud storage
+- 🌐 **Cloud Deployment** - Free hosting on Render.com
+- ⚡ **Fast & Efficient** - Uses gpt-4.1-nano for cost-effective responses
 
-> **🎉 mem0ai v1.0.0 is now available!** This major release includes API modernization, improved vector store support, and enhanced GCP integration. [See migration guide →](MIGRATION_GUIDE_v1.0.md)
+## 🏗️ Architecture
+
+```
+Mac Terminal                          iPhone Safari
+     ↓                                     ↓
+Local Qdrant                         Render.com (FastAPI)
+(~/.mem0/qdrant)                           ↓
+                                   Qdrant Cloud (Free Tier)
+```
+
+**Storage Strategy:**
+- Mac: Local on-disk storage (44 memories)
+- iPhone: Qdrant Cloud persistent storage (34 memories)
+- **Both completely separate** - no sync by design
+
+## 🚀 Quick Start
+
+### Mac Terminal Setup
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/JLDynamics/companionplusmem0.git
+   cd companionplusmem0/companion-chatbot
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Create `.env` file:**
+   ```bash
+   OPENAI_API_KEY=sk-proj-your-key-here
+   ```
+
+4. **Run the chatbot:**
+   ```bash
+   python3 companion.py
+   ```
+
+### iPhone Web Deployment
+
+1. **Set up Qdrant Cloud:**
+   - Sign up at [cloud.qdrant.io](https://cloud.qdrant.io)
+   - Create a free cluster (1GB, $0/month)
+   - Get your cluster URL and API key
+
+2. **Deploy to Render.com:**
+   - Push code to GitHub
+   - Connect repository to Render
+   - Set environment variables:
+     ```
+     OPENAI_API_KEY=sk-proj-your-key
+     RENDER=true
+     QDRANT_URL=https://your-cluster.aws.cloud.qdrant.io:6333
+     QDRANT_API_KEY=your-qdrant-key
+     ```
+   - Deploy with:
+     - Build Command: `pip install -r requirements.txt`
+     - Start Command: `uvicorn api:app --host 0.0.0.0 --port $PORT`
+
+3. **Access on iPhone:**
+   - Open Safari
+   - Go to: `https://your-service.onrender.com`
+   - Tap "Add to Home Screen" for app-like experience
 
 ##  🔥 Research Highlights
 - **+26% Accuracy** over OpenAI Memory on the LOCOMO benchmark
