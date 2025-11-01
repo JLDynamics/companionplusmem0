@@ -6,6 +6,28 @@ from qdrant_client import QdrantClient
 # Load environment variables from a local `.env` file.
 load_dotenv()
 
+# Detect if running on Render cloud
+IS_RENDER = os.getenv("RENDER") is not None
+
+# Set appropriate paths based on environment
+QDRANT_PATH = "/app/.mem0/qdrant" if IS_RENDER else os.path.expanduser("~/.mem0/qdrant")
+HISTORY_DB_PATH = "/app/.mem0/history.db" if IS_RENDER else os.path.expanduser("~/.mem0/history.db")
+
+import os
+
+from dotenv import load_dotenv
+from qdrant_client import QdrantClient
+
+# Load environment variables from a local `.env` file.
+load_dotenv()
+
+# Detect if running on Render cloud (for path configuration)
+IS_RENDER = os.getenv("RENDER") is not None
+
+# Set appropriate paths for local Mac vs Render cloud
+QDRANT_PATH = "/app/.mem0/qdrant" if IS_RENDER else os.path.expanduser("~/.mem0/qdrant")
+HISTORY_DB_PATH = "/app/.mem0/history.db" if IS_RENDER else os.path.expanduser("~/.mem0/history.db")
+
 MEM0_CONFIG = {
     "llm": {
         "provider": "openai",
@@ -29,12 +51,12 @@ MEM0_CONFIG = {
             "collection_name": "companion_memories",
             "embedding_model_dims": 1536,
             "client": QdrantClient(
-                path=os.path.expanduser("~/.mem0/qdrant"),  # Permanent location
+                path=QDRANT_PATH,
                 force_disable_check_same_thread=True,
             ),
         },
     },
-    "history_db_path": os.path.expanduser("~/.mem0/history.db"),
+    "history_db_path": HISTORY_DB_PATH,
 }
 
 USER_ID = "companion_user"
