@@ -38,7 +38,7 @@ if IS_RENDER and QDRANT_URL and QDRANT_API_KEY:
     
 else:
     # ==== MAC (Local Terminal) ====
-    # Use local Qdrant storage with separate collection for Mac
+    # Use local Qdrant storage with ORIGINAL collection name
     print("💻 Mac detected - Using local storage for Mac memories")
     
     QDRANT_PATH = os.path.expanduser("~/.mem0/qdrant")
@@ -48,7 +48,7 @@ else:
         force_disable_check_same_thread=True,
     )
     
-    COLLECTION_NAME = "companion_memories_mac"  # Separate collection!
+    COLLECTION_NAME = "companion_memories"  # Keep ORIGINAL collection name - your memories are here!
     HISTORY_DB_PATH = os.path.expanduser("~/.mem0/history.db")
     
     print(f"✅ Using local storage: {QDRANT_PATH}")
