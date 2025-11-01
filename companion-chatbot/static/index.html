@@ -17,13 +17,23 @@
             box-sizing: border-box;
         }
         
+        html {
+            height: 100vh;
+            height: 100dvh; /* Dynamic viewport height - adapts to browser chrome */
+        }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            height: 100vh;
+            height: 100%;
             background: #000;
             color: #fff;
             overflow: hidden;
-            position: relative;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
         }
         
         #header {
@@ -438,25 +448,6 @@
         closeModal.addEventListener('click', () => modal.classList.remove('show'));
         modal.addEventListener('click', (e) => {
             if (e.target === modal) modal.classList.remove('show');
-        });
-        
-        // iOS Safari fix: Lock body scroll when input is focused to prevent input from scrolling
-        let scrollPosition = 0;
-        
-        messageInput.addEventListener('focus', () => {
-            // Lock body scroll position
-            scrollPosition = window.pageYOffset;
-            document.body.style.position = 'fixed';
-            document.body.style.top = `-${scrollPosition}px`;
-            document.body.style.width = '100%';
-        });
-        
-        messageInput.addEventListener('blur', () => {
-            // Restore body scroll
-            document.body.style.position = '';
-            document.body.style.top = '';
-            document.body.style.width = '';
-            window.scrollTo(0, scrollPosition);
         });
         
         // Focus input on load
