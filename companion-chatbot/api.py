@@ -44,6 +44,7 @@ async def root():
 @app.get("/health")
 async def health_check():
     """Health check endpoint for uptime monitoring"""
+    # Note: SYSTEM_PROMPT is imported from companion.py (Rudi's personality)
     return {"status": "healthy", "service": "rudi-companion"}
 
 @app.post("/chat", response_model=ChatResponse)
