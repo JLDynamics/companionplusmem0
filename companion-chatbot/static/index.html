@@ -132,7 +132,7 @@
             flex-shrink: 0;
         }
 
-        .input-bar textarea {
+        .input-bar .input-field {
             flex: 1;
             background: #2C2C2E;
             border: none;
@@ -141,14 +141,26 @@
             font-size: 16px;
             font-family: inherit;
             padding: 10px 14px;
-            resize: none;
             max-height: 80px;
             min-height: 40px;
             outline: none;
             line-height: 1.4;
-            /* Prevent textarea from showing through keyboard accessory bar */
-            -webkit-appearance: none;
-            appearance: none;
+            overflow-y: auto;
+            overflow-x: hidden;
+            word-wrap: break-word;
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        .input-bar .input-field:empty:before {
+            content: attr(data-placeholder);
+            color: #666;
+            pointer-events: none;
+        }
+
+        .input-bar .input-field:focus {
+            outline: 2px solid #007AFF;
+            outline-offset: -1px;
         }
 
         .input-bar textarea::placeholder {
@@ -250,12 +262,15 @@
 
         <!-- Input bar -->
         <div class="input-bar">
-            <textarea 
-                id="input" 
-                placeholder="Message..." 
-                rows="1"
+            <div 
+                id="input"
+                class="input-field"
+                contenteditable="true"
+                data-placeholder="Message..."
+                role="textbox"
+                aria-label="Message input"
                 onkeydown="handleKey(event)"
-                oninput="autoResize(this); updateBtn()"></textarea>
+                oninput="updateBtn()"></div>
             <button id="btn" onclick="send()" disabled>▲</button>
         </div>
     </div>
@@ -280,16 +295,9 @@
         const mems = document.getElementById('mems');
         let sending = false;
 
-        // Auto-resize textarea
-        function autoResize(el) {
-            el.style.height = '40px'; // Reset to min height
-            const newHeight = Math.min(el.scrollHeight, 80); // Max 80px
-            el.style.height = newHeight + 'px';
-        }
-
         // Update send button state
         function updateBtn() {
-            btn.disabled = !input.value.trim() || sending;
+            btn.disabled = !input.textContent.trim() || sending;
         }
 
         // Handle Enter key
@@ -326,15 +334,14 @@
 
         // Send message
         async function send() {
-            const text = input.value.trim();
+            const text = input.textContent.trim();
             if (!text || sending) return;
 
             sending = true;
             btn.disabled = true;
 
             addMsg(text, 'user');
-            input.value = '';
-            input.style.height = 'auto';
+            input.textContent = '';
             showTyping();
 
             try {
