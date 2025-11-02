@@ -43,6 +43,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            padding-bottom: 0; /* Will be dynamically adjusted for keyboard */
         }
         
         #header {
@@ -81,7 +82,7 @@
             overflow-y: auto;
             overflow-x: hidden;
             padding: 20px;
-            padding-bottom: 30px;
+            padding-bottom: 100px; /* Space for fixed input at bottom */
             -webkit-overflow-scrolling: touch;
         }
         
@@ -146,12 +147,21 @@
             30% { transform: translateY(-10px); }
         }
         
+        #input-wrapper {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: #1C1C1E;
+            border-top: 1px solid #2C2C2E;
+            transition: transform 0.25s cubic-bezier(0.17, 0.89, 0.24, 1.0);
+            will-change: transform;
+        }
+        
         #input-container {
-            flex-shrink: 0;
             padding: 15px 20px;
             padding-bottom: max(15px, env(safe-area-inset-bottom));
-            background: #1C1C1C1E;
-            border-top: 1px solid #2C2C2E;
             display: flex;
             gap: 10px;
             align-items: flex-end;
@@ -287,9 +297,12 @@
         </div>
         
         <div id="chat-container"></div>
-        
+    </div>
+    
+    <!-- Input moved outside app-container for fixed positioning -->
+    <div id="input-wrapper">
         <div id="input-container">
-            <input type="text" id="message-input" placeholder="Message Rudi..." autocomplete="off">
+            <input type="text" id="message-input" placeholder="Message Rudi..." autocomplete="off" inputmode="text" enterkeyhint="send">
             <button id="send-btn" disabled>▲</button>
         </div>
     </div>
@@ -312,8 +325,61 @@
         const modal = document.getElementById('modal');
         const closeModal = document.getElementById('close-modal');
         const memoriesList = document.getElementById('memories-list');
+        const inputWrapper = document.getElementById('input-wrapper');
+        const appContainer = document.getElementById('app-container');
         
         let isTyping = false;
+        let keyboardHeight = 0;
+        
+        // Keyboard handling using VisualViewport API (React Native equivalent)
+        function handleKeyboardChange() {
+            if (!window.visualViewport) return;
+            
+            const viewport = window.visualViewport;
+            const currentKeyboardHeight = window.innerHeight - viewport.height;
+            
+            // Only update if keyboard height actually changed (prevents unnecessary updates)
+            if (Math.abs(currentKeyboardHeight - keyboardHeight) > 10) {
+                keyboardHeight = currentKeyboardHeight;
+                
+                if (keyboardHeight > 0) {
+                    // Keyboard is opening - move input up by keyboard height
+                    inputWrapper.style.transform = `translateY(-${keyboardHeight}px)`;
+                    // Add padding to chat container so content isn't hidden
+                    chatContainer.style.paddingBottom = `${keyboardHeight + 100}px`;
+                    // Scroll to bottom to show latest message
+                    setTimeout(() => {
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                    }, 100);
+                } else {
+                    // Keyboard is closing - reset position
+                    inputWrapper.style.transform = 'translateY(0)';
+                    chatContainer.style.paddingBottom = '100px';
+                }
+            }
+        }
+        
+        // Add keyboard event listeners (like React Native's Keyboard.addListener)
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', handleKeyboardChange);
+            window.visualViewport.addEventListener('scroll', handleKeyboardChange);
+        }
+        
+        // Fallback for browsers without VisualViewport API
+        window.addEventListener('resize', () => {
+            if (!window.visualViewport) {
+                handleKeyboardChange();
+            }
+        });
+        
+        // Trigger keyboard handler when input is focused/blurred
+        messageInput.addEventListener('focus', () => {
+            setTimeout(handleKeyboardChange, 300); // Delay to let keyboard animate
+        });
+        
+        messageInput.addEventListener('blur', () => {
+            setTimeout(handleKeyboardChange, 300);
+        });
         
         // Enable send button
         messageInput.addEventListener('input', () => {
