@@ -128,7 +128,7 @@
             padding-bottom: max(10px, env(safe-area-inset-bottom));
             display: flex;
             gap: 8px;
-            align-items: center;
+            align-items: flex-end;
             flex-shrink: 0;
         }
 
@@ -142,8 +142,13 @@
             font-family: inherit;
             padding: 10px 14px;
             resize: none;
-            max-height: 100px;
+            max-height: 80px;
+            min-height: 40px;
             outline: none;
+            line-height: 1.4;
+            /* Prevent textarea from showing through keyboard accessory bar */
+            -webkit-appearance: none;
+            appearance: none;
         }
 
         .input-bar textarea::placeholder {
@@ -162,11 +167,17 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            margin-bottom: 2px;
         }
 
         .input-bar button:disabled {
             background: #333;
             color: #666;
+        }
+
+        .input-bar button:active:not(:disabled) {
+            background: #0051D5;
+            transform: scale(0.95);
         }
 
         /* Modal */
@@ -271,8 +282,9 @@
 
         // Auto-resize textarea
         function autoResize(el) {
-            el.style.height = 'auto';
-            el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+            el.style.height = '40px'; // Reset to min height
+            const newHeight = Math.min(el.scrollHeight, 80); // Max 80px
+            el.style.height = newHeight + 'px';
         }
 
         // Update send button state
